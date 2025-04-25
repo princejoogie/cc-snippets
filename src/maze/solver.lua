@@ -70,14 +70,16 @@ print("Starting exploration...")
 
 while true do
 	if turtle.detect() then
-		local blockType = turtle.inspect() -- Get the block in front
-		local name = blockType.name
-		print("Detected block: " .. name)
+		local present, blockType = turtle.inspect()
+		if present then
+			local name = blockType.name
+			print("Detected block: " .. name)
 
-		-- If iron ore is detected, stop exploring
-		if name == "minecraft:iron_ore" then
-			print("Iron ore detected! Stopping exploration.")
-			break
+			-- If iron ore is detected, stop exploring
+			if name == "minecraft:iron_ore" then
+				print("Iron ore detected! Stopping exploration.")
+				break
+			end
 		end
 	end
 
