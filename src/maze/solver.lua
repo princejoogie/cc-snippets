@@ -1,3 +1,14 @@
+-- my test maze:
+--
+-- ++++++++
+-- +     X+
+-- +++ ++ +
+-- +    + +
+-- + ++ + +
+-- +O+    +
+-- ++++++++
+--
+-- moving forward from the start will "move up" the maze
 -- === Utility ===
 local function key(pos)
 	return pos.x .. "," .. pos.y
@@ -170,7 +181,14 @@ if turtle.getFuelLevel() == 0 then
 end
 
 -- === MAIN ===
-local GOAL = { x = 5, y = -4 } -- change this!
+local GOAL = { x = 5, y = -4 } -- 'X' relative to 'O' at {0,0}
+
+-- Probe adjacent blocks so A* has at least some data
+for d = 0, 3 do
+	local checkX = pos.x + directions[d].x
+	local checkY = pos.y + directions[d].y
+	canMoveTo(checkX, checkY)
+end
 
 print("Starting A* pathfinding...")
 local path = aStar(pos, GOAL)
