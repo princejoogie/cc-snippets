@@ -65,11 +65,25 @@ if turtle.getFuelLevel() == 0 then
 	turtle.refuel()
 end
 
--- Exploration phase
+-- Exploration loop: keep going indefinitely until iron ore is detected
 print("Starting exploration...")
-for i = 1, 100 do
+
+while true do
+	if turtle.detect() then
+		local blockType = turtle.inspect() -- Get the block in front
+		local name = blockType.name
+		print("Detected block: " .. name)
+
+		-- If iron ore is detected, stop exploring
+		if name == "minecraft:iron_ore" then
+			print("Iron ore detected! Stopping exploration.")
+			break
+		end
+	end
+
+	-- Continue moving around
 	if not tryMove() then
-		print("Turtle is stuck after " .. i .. " steps!")
+		print("Turtle is stuck!")
 		break
 	end
 end
