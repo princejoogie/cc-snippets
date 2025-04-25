@@ -1,4 +1,4 @@
-local path = {} -- to store the path
+local path = {} -- track steps
 local reverse = {
 	F = function()
 		turtle.back()
@@ -11,101 +11,71 @@ local reverse = {
 	end,
 }
 
--- Function to check and move the turtle
+-- Attempt to move and return true if successful, false if stuck or iron ore found
 local function tryMove()
-	-- Check if there's a block in front
-	print("Checking front...")
-	if turtle.detect() then
-		print("Block detected in front.")
+	local hasBlock, data = turtle.inspect()
+	if hasBlock then
+		print("Detected block: " .. data.name)
 
-		-- Both right and left checks
+		if data.name == "minecraft:iron_ore" then
+			print("Iron ore found! Stopping.")
+			return "found"
+		end
+
+		-- Try right
 		turtle.turnRight()
-		local rightBlocked = turtle.detect()
-		turtle.turnLeft() -- Turn back to original position
-		turtle.turnLeft() -- Now facing left
-
-		local leftBlocked = turtle.detect()
-
-		-- Print the status of right and left
-		print("Right blocked: " .. tostring(rightBlocked))
-		print("Left blocked: " .. tostring(leftBlocked))
-
-		-- If right is blocked, go left, and vice versa
-		if rightBlocked then
-			if leftBlocked then
-				print("Both directions blocked, turtle is stuck!")
-				return false -- Both directions blocked, turtle is stuck
-			else
-				-- Left available, go left
-				print("Right blocked, going left.")
-				turtle.turnLeft()
-				turtle.forward()
-				table.insert(path, "L")
-				return true
-			end
-		else
-			-- Right available, go right
-			print("Right available, going right.")
-			turtle.turnRight()
+		if not turtle.detect() then
 			turtle.forward()
 			table.insert(path, "R")
 			return true
 		end
+
+		-- Try left
+		turtle.turnLeft() -- face forward again
+		turtle.turnLeft() -- now left
+		if not turtle.detect() then
+			turtle.forward()
+			table.insert(path, "L")
+			return true
+		end
+
+		-- Now facing original direction
+		turtle.turnRight()
+		print("Stuck! No path.")
+		return false
 	else
-		-- No block, move forward
-		print("No block in front, moving forward.")
+		-- No block, just move forward
 		turtle.forward()
 		table.insert(path, "F")
 		return true
 	end
 end
 
--- Optional: refuel check
+-- Refuel if needed
 if turtle.getFuelLevel() == 0 then
-	print("Fuel level is 0, refueling...")
+	print("Fuel is 0. Refueling from slot 1...")
 	turtle.select(1)
 	turtle.refuel()
 end
 
--- Exploration loop: keep going indefinitely until iron ore is detected
-print("Starting exploration...")
+print("Starting maze traversal...")
 
 while true do
-	if turtle.detect() then
-		local present, blockType = turtle.inspect()
-		if present then
-			local name = blockType.name
-			print("Detected block: " .. name)
-
-			-- If iron ore is detected, stop exploring
-			if name == "minecraft:iron_ore" then
-				print("Iron ore detected! Stopping exploration.")
-				break
-			end
-		end
-	end
-
-	-- Continue moving around
-	if not tryMove() then
-		print("Turtle is stuck!")
+	local result = tryMove()
+	if result == "found" then
+		break
+	elseif not result then
+		print("Turtle stuck. Ending.")
 		break
 	end
 end
 
--- Return to start: backtrack path
-print("Returning to start...")
+-- Go back
+print("Backtracking...")
 for i = #path, 1, -1 do
 	local move = path[i]
-	if move == "F" then
-		reverse.F()
-		print("Going back: F")
-	elseif move == "R" then
-		reverse.R()
-		print("Going back: R")
-	elseif move == "L" then
-		reverse.L()
-		print("Going back: L")
-	end
+	reverse[move]()
+	print("Backtracked: " .. move)
 end
 
-print("Back at start!")
+print("Returned to start.")
