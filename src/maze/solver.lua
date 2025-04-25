@@ -41,6 +41,7 @@ local function tryMove()
 				turtle.turnLeft()
 				turtle.forward()
 				table.insert(path, "L")
+				return true
 			end
 		else
 			-- Right available, go right
@@ -48,14 +49,15 @@ local function tryMove()
 			turtle.turnRight()
 			turtle.forward()
 			table.insert(path, "R")
+			return true
 		end
 	else
 		-- No block, move forward
 		print("No block in front, moving forward.")
 		turtle.forward()
 		table.insert(path, "F")
+		return true
 	end
-	return true
 end
 
 -- Optional: refuel check
