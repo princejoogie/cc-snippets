@@ -1,4 +1,4 @@
-local path = {}
+local path = {} -- to store the path
 local reverse = {
 	F = function()
 		turtle.back()
@@ -11,27 +11,47 @@ local reverse = {
 	end,
 }
 
+-- Function to check and move the turtle
 local function tryMove()
+	-- Check if there's a block in front
+	print("Checking front...")
 	if turtle.detect() then
+		print("Block detected in front.")
+
+		-- Both right and left checks
 		turtle.turnRight()
-		table.insert(path, "R")
-		if turtle.detect() then
-			-- Turn around (left twice from current position)
-			turtle.turnLeft()
-			turtle.turnLeft()
-			table.insert(path, "L")
-			table.insert(path, "L")
-			if turtle.detect() then
-				return false -- Stuck!
+		local rightBlocked = turtle.detect()
+		turtle.turnLeft() -- Turn back to original position
+		turtle.turnLeft() -- Now facing left
+
+		local leftBlocked = turtle.detect()
+
+		-- Print the status of right and left
+		print("Right blocked: " .. tostring(rightBlocked))
+		print("Left blocked: " .. tostring(leftBlocked))
+
+		-- If right is blocked, go left, and vice versa
+		if rightBlocked then
+			if leftBlocked then
+				print("Both directions blocked, turtle is stuck!")
+				return false -- Both directions blocked, turtle is stuck
 			else
+				-- Left available, go left
+				print("Right blocked, going left.")
+				turtle.turnLeft()
 				turtle.forward()
-				table.insert(path, "F")
+				table.insert(path, "L")
 			end
 		else
+			-- Right available, go right
+			print("Right available, going right.")
+			turtle.turnRight()
 			turtle.forward()
-			table.insert(path, "F")
+			table.insert(path, "R")
 		end
 	else
+		-- No block, move forward
+		print("No block in front, moving forward.")
 		turtle.forward()
 		table.insert(path, "F")
 	end
@@ -40,28 +60,33 @@ end
 
 -- Optional: refuel check
 if turtle.getFuelLevel() == 0 then
+	print("Fuel level is 0, refueling...")
 	turtle.select(1)
 	turtle.refuel()
 end
 
 -- Exploration phase
+print("Starting exploration...")
 for i = 1, 100 do
 	if not tryMove() then
-		print("Turtle is stuck!")
+		print("Turtle is stuck after " .. i .. " steps!")
 		break
 	end
 end
 
--- Reverse phase
+-- Return to start: backtrack path
 print("Returning to start...")
 for i = #path, 1, -1 do
 	local move = path[i]
 	if move == "F" then
 		reverse.F()
+		print("Going back: F")
 	elseif move == "R" then
 		reverse.R()
+		print("Going back: R")
 	elseif move == "L" then
 		reverse.L()
+		print("Going back: L")
 	end
 end
 
